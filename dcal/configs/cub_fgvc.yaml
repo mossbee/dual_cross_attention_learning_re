@@ -2,7 +2,7 @@
 task: fgvc
 dataset:
   name: CUB_200_2011
-  root: /kaggle/input/cub-200-2011/images
+  root: /kaggle/input/cub-200-2011
   num_classes: 200
   image_size: 448
   resize: 550
