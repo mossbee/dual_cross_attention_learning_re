@@ -16,6 +16,7 @@ def main() -> None:
     from dcal.utils.logging import setup_logger
     from dcal.data.loaders import build_reid_loaders
     from dcal.engine.trainer import Trainer
+    from dcal.engine.reid_engine import ReIDEngine
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, required=True)
@@ -24,9 +25,11 @@ def main() -> None:
     cfg = load_config(args.config)
     log = setup_logger(cfg)
     log.info("Building Re-ID loaders")
-    _ = build_reid_loaders(cfg)
-    log.info("Initializing trainer")
-    _ = Trainer(cfg)
+    train_loader, query_loader, gallery_loader = build_reid_loaders(cfg)
+    log.info("Initializing engine and trainer")
+    engine = ReIDEngine(cfg)
+    trainer = Trainer(cfg, engine, train_loader, query_loader=query_loader, gallery_loader=gallery_loader)
+    trainer.train()
     log.info("Re-ID training pipeline initialized (implementation placeholder)")
 
 
