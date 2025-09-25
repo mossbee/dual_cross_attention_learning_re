@@ -38,9 +38,9 @@ class FGVCEngine:
             num_heads=12,
             r_fraction=ds.get("r_fraction", 0.1),
             num_classes=ds["num_classes"],
-            use_pwca=False,  # paper: PWCA only used in training; FGVC can also avoid it
+            use_pwca=True,  # PWCA is used during training only
         )
-        self.uncertainty = UncertaintyWeighting(num_terms=2)
+        self.uncertainty = UncertaintyWeighting(num_terms=3)
 
     def step(self, batch: Dict[str, Any]) -> Dict[str, Any]:
         images = batch["images"]
@@ -48,8 +48,9 @@ class FGVCEngine:
         out = self.model({"images": images})
         L_sa = classification_loss(out["sa"]["logits"], labels)
         L_glca = classification_loss(out["glca"]["logits"], labels)
-        total = self.uncertainty({"sa": L_sa, "glca": L_glca})
+        L_pw = classification_loss(out["pwca"]["logits"], labels) if "pwca" in out else torch.tensor(0.0, device=images.device)
+        total = self.uncertainty({"sa": L_sa, "glca": L_glca, "pwca": L_pw})
         acc = top1_accuracy(out["sa"]["logits"], labels)
-        return {"loss": total["total"], "acc1": acc, "L_sa": L_sa.detach(), "L_glca": L_glca.detach()}
+        return {"loss": total["total"], "acc1": acc, "L_sa": L_sa.detach(), "L_glca": L_glca.detach(), "L_pw": L_pw.detach()}
 
 

@@ -6,11 +6,11 @@ Purpose:
   simple namespace-like object.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 import yaml
 
 
-def load_config(path: str, overrides: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def load_config(path: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Load configuration from YAML and apply optional overrides.
     """

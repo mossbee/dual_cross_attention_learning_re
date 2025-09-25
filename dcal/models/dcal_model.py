@@ -21,7 +21,7 @@ References:
 - `dual_cross_attention_learning.md`, Sections Global-Local Cross-Attention and Pair-Wise Cross-Attention.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 import torch
 import torch.nn as nn
@@ -59,8 +59,8 @@ class DCALModel(nn.Module):
         num_heads: int = 12,
         mlp_ratio: float = 4.0,
         r_fraction: float = 0.1,
-        num_classes: int | None = None,
-        num_ids: int | None = None,
+        num_classes: Optional[int] = None,
+        num_ids: Optional[int] = None,
         reid_embed_dim: int = 512,
         use_pwca: bool = True,
     ) -> None:
@@ -111,7 +111,10 @@ class DCALModel(nn.Module):
             outputs["sa"] = {"logits": logits_sa, "cls": cls}
         else:
             sa = self.sa_head(cls)
-            outputs["sa"] = sa | {"cls": cls}
+            # Merge dict outputs without relying on Python 3.9+ dict union
+            sa_out = dict(sa)
+            sa_out["cls"] = cls
+            outputs["sa"] = sa_out
 
         # GLCA branch via rollout-based top-R selection
         accum_list = compute_rollout(attentions)
@@ -129,7 +132,9 @@ class DCALModel(nn.Module):
             outputs["glca"] = {"logits": logits_glca, "pooled": glca_pooled}
         else:
             gl = self.glca_head(glca_pooled)
-            outputs["glca"] = gl | {"pooled": glca_pooled}
+            gl_out = dict(gl)
+            gl_out["pooled"] = glca_pooled
+            outputs["glca"] = gl_out
 
         # PWCA branch (training only)
         if self.training and self.use_pwca:
@@ -148,7 +153,9 @@ class DCALModel(nn.Module):
                 outputs["pwca"] = {"logits": logits_pw, "cls": cls_pw}
             else:
                 pw = self.pwca_head(cls_pw)
-                outputs["pwca"] = pw | {"cls": cls_pw}
+                pw_out = dict(pw)
+                pw_out["cls"] = cls_pw
+                outputs["pwca"] = pw_out
 
         return outputs
 

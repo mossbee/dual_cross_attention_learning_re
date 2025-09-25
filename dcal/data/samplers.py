@@ -26,12 +26,17 @@ class IdentityPKSampler(Sampler[List[int]]):
         self.data_source = data_source
         self.num_p = num_p
         self.num_k = num_k
-        # Build pid -> indices mapping
+        # Build pid -> indices mapping without forcing image IO when possible
         self.pid_to_indices: Dict[int, List[int]] = defaultdict(list)
-        for idx in range(len(data_source)):
-            item = data_source[idx]
-            pid = int(item["pid"]) if isinstance(item, dict) else int(item.pid)
-            self.pid_to_indices[pid].append(idx)
+        pids = getattr(data_source, "pids", None)
+        if isinstance(pids, list) and len(pids) == len(data_source):
+            for idx, pid in enumerate(pids):
+                self.pid_to_indices[int(pid)].append(idx)
+        else:
+            for idx in range(len(data_source)):
+                item = data_source[idx]
+                pid = int(item["pid"]) if isinstance(item, dict) else int(item.pid)
+                self.pid_to_indices[pid].append(idx)
 
     def __iter__(self) -> Iterator[List[int]]:
         pids = list(self.pid_to_indices.keys())

@@ -36,7 +36,14 @@ def build_reid_loaders(cfg: Any) -> Tuple[Any, Any, Any]:
     p = max(1, cfg["train"].get("batch_size", 64) // cfg["train"].get("images_per_id", 4))
     k = cfg["train"].get("images_per_id", 4)
     sampler = IdentityPKSampler(train_set, num_p=p, num_k=k)
-    train_loader = DataLoader(train_set, batch_size=p * k, sampler=sampler, num_workers=4, pin_memory=True, collate_fn=collate_reid)
+    # Use batch_sampler instead of sampler+batch_size to respect PK grouping
+    train_loader = DataLoader(
+        train_set,
+        batch_sampler=sampler,
+        num_workers=4,
+        pin_memory=True,
+        collate_fn=collate_reid,
+    )
     query_loader = DataLoader(query_set, batch_size=128, shuffle=False, num_workers=4, pin_memory=True, collate_fn=collate_reid)
     gallery_loader = DataLoader(gallery_set, batch_size=128, shuffle=False, num_workers=4, pin_memory=True, collate_fn=collate_reid)
     return train_loader, query_loader, gallery_loader
