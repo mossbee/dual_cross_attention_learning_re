@@ -9,7 +9,7 @@ dataset:
   r_fraction: 0.1
 train:
   epochs: 100
-  batch_size: 16
+  batch_size: 4
   optimizer: adamw
   weight_decay: 0.05
   lr: 0.0005
