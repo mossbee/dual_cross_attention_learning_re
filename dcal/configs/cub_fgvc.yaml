@@ -1,0 +1,30 @@
+# Sample config for CUB FGVC training per dual_cross_attention_learning.md
+task: fgvc
+dataset:
+  name: CUB_200_2011
+  root: /path/to/CUB_200_2011
+  num_classes: 200
+  image_size: 448
+  resize: 550
+  r_fraction: 0.1
+train:
+  epochs: 100
+  batch_size: 16
+  optimizer: adamw
+  weight_decay: 0.05
+  lr: 0.0005
+  lr_scaled_divisor: 512
+  cosine_decay: true
+model:
+  vit: ViT-B_16
+  depth: 12
+  glca_blocks: 1
+  pwca_blocks: 12
+loss:
+  use_uncertainty: true
+  terms: [sa, glca]
+distributed:
+  enabled: false
+logging:
+  output_dir: ./outputs/cub
+

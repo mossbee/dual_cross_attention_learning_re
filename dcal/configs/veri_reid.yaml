@@ -1,0 +1,31 @@
+# Sample config for VeRi Re-ID training per dual_cross_attention_learning.md
+task: reid
+dataset:
+  name: VeRi_776
+  root: /path/to/VeRi
+  num_ids: 576
+  image_size: 256
+  vehicle: true
+  r_fraction: 0.3
+train:
+  epochs: 120
+  batch_size: 64
+  images_per_id: 4
+  optimizer: sgd
+  weight_decay: 0.0001
+  lr: 0.008
+  cosine_decay: true
+model:
+  vit: ViT-B_16
+  depth: 12
+  glca_blocks: 1
+  pwca_blocks: 12
+  embed_dim: 512
+loss:
+  use_uncertainty: true
+  terms: [sa, glca, pwca]
+distributed:
+  enabled: false
+logging:
+  output_dir: ./outputs/veri
+
